@@ -1,0 +1,874 @@
+<title>ARUS Leakage Exposure Map</title>
+<style id="app-style">
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root{
+    --paper:#f5f2ea;
+    --surface:#fffdf8;
+    --surface-2:#eee9dc;
+    --ink:#1d2430;
+    --ink-2:#565c6b;
+    --muted:#8b8f80;
+    --hairline:#dcd6c4;
+    --accent:#a8621f;
+    --accent-ink:#fffaf1;
+    --accent-wash:#f1e2cd;
+    --link:#2c5a86;
+
+    --good:#0ca30c;
+    --warning:#b1780a;
+    --serious:#c25a2e;
+    --critical:#a3312f;
+    --good-wash:#e4f3e0;
+    --warning-wash:#faeed2;
+    --serious-wash:#f7e2d5;
+    --critical-wash:#f4dcda;
+
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#c98500; --s5:#e87ba4;
+
+    --shadow: 0 1px 2px rgba(29,36,48,0.06), 0 8px 24px -12px rgba(29,36,48,0.18);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#14171c;
+      --surface:#1b1f26;
+      --surface-2:#232833;
+      --ink:#eeece3;
+      --ink-2:#b7bac4;
+      --muted:#8a8f9c;
+      --hairline:#323847;
+      --accent:#e0a35e;
+      --accent-ink:#241505;
+      --accent-wash:#3a2c17;
+      --link:#8fb8de;
+
+      --good:#4fbf5a;
+      --warning:#e0a83c;
+      --serious:#e08a5d;
+      --critical:#e2726f;
+      --good-wash:#1c2c1c;
+      --warning-wash:#332a15;
+      --serious-wash:#332019;
+      --critical-wash:#331b1a;
+
+      --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#14171c;
+    --surface:#1b1f26;
+    --surface-2:#232833;
+    --ink:#eeece3;
+    --ink-2:#b7bac4;
+    --muted:#8a8f9c;
+    --hairline:#323847;
+    --accent:#e0a35e;
+    --accent-ink:#241505;
+    --accent-wash:#3a2c17;
+    --link:#8fb8de;
+
+    --good:#4fbf5a;
+    --warning:#e0a83c;
+    --serious:#e08a5d;
+    --critical:#e2726f;
+    --good-wash:#1c2c1c;
+    --warning-wash:#332a15;
+    --serious-wash:#332019;
+    --critical-wash:#331b1a;
+
+    --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181;
+    color-scheme: dark;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, sans-serif;
+    font-size:15px; line-height:1.5;
+  }
+  h1,h2,h3{ font-family:"Source Serif 4", Georgia, serif; font-weight:600; text-wrap:balance; margin:0; }
+  .mono{ font-family:"IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  a{ color:var(--link); }
+
+  #app{ max-width:1180px; margin:0 auto; padding:28px 24px 80px; }
+
+  /* ---------- header ---------- */
+  .masthead{
+    display:flex; align-items:flex-end; justify-content:space-between; gap:20px;
+    border-bottom:2px solid var(--ink); padding-bottom:16px; margin-bottom:20px;
+    flex-wrap:wrap;
+  }
+  .masthead .eyebrow{
+    font-family:"IBM Plex Mono"; font-size:11px; letter-spacing:.09em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; margin-bottom:6px; display:block;
+  }
+  .masthead h1{ font-size:30px; }
+  .masthead .meta{ text-align:right; font-size:12.5px; color:var(--ink-2); }
+  .masthead .meta strong{ color:var(--ink); }
+
+  /* ---------- flag banner ---------- */
+  .flag{
+    display:flex; gap:14px; align-items:flex-start;
+    background:var(--critical-wash); border:1px solid var(--critical);
+    border-radius:10px; padding:14px 16px; margin-bottom:22px;
+  }
+  .flag .glyph{
+    flex:none; width:28px; height:28px; border-radius:50%; background:var(--critical); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-weight:700; font-family:"IBM Plex Mono";
+    font-size:15px;
+  }
+  .flag h2{ font-size:15.5px; font-family:"IBM Plex Sans"; font-weight:700; margin-bottom:3px; }
+  .flag p{ margin:0; font-size:13.5px; color:var(--ink-2); max-width:78ch; }
+
+  /* ---------- kpi row ---------- */
+  .kpis{ display:grid; grid-template-columns:repeat(5,1fr); gap:1px; background:var(--hairline);
+    border:1px solid var(--hairline); border-radius:10px; overflow:hidden; margin-bottom:26px; }
+  .kpi{ background:var(--surface); padding:14px 16px; }
+  .kpi .num{ font-family:"Source Serif 4"; font-size:26px; font-weight:600; line-height:1.1; }
+  .kpi .num small{ font-size:14px; font-weight:500; color:var(--ink-2); }
+  .kpi .label{ font-size:11.5px; color:var(--ink-2); margin-top:4px; }
+  .kpi.warn .num{ color:var(--critical); }
+
+  /* ---------- distribution chart ---------- */
+  .panel{ background:var(--surface); border:1px solid var(--hairline); border-radius:12px;
+    padding:18px 20px; margin-bottom:26px; box-shadow:var(--shadow); }
+  .panel h3{ font-size:15px; margin-bottom:2px; }
+  .panel .sub{ font-size:12.5px; color:var(--ink-2); margin-bottom:14px; }
+  .dist-row{ display:grid; grid-template-columns:150px 1fr 34px; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px;}
+  .dist-track{ display:flex; height:16px; border-radius:4px; overflow:hidden; background:var(--surface-2); }
+  .dist-seg{ height:100%; }
+  .dist-total{ text-align:right; color:var(--ink-2); }
+  .legend{ display:flex; gap:16px; flex-wrap:wrap; margin-top:10px; font-size:12px; color:var(--ink-2); }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .legend i{ width:10px; height:10px; border-radius:2px; display:inline-block; }
+
+  /* ---------- tabs ---------- */
+  .tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+  .tab{
+    font-family:"IBM Plex Mono"; font-size:12px; padding:8px 13px; border-radius:999px;
+    border:1px solid var(--hairline); background:var(--surface); color:var(--ink-2); cursor:pointer;
+    display:flex; align-items:center; gap:8px;
+  }
+  .tab .n{ background:var(--surface-2); border-radius:999px; padding:1px 6px; font-size:11px; }
+  .tab.active{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+  .tab.active .n{ background:rgba(255,255,255,0.18); color:var(--paper); }
+  .tab:hover:not(.active){ border-color:var(--accent); color:var(--ink); }
+
+  /* ---------- lob group ---------- */
+  .lob-group{ margin-bottom:30px; }
+  .lob-head{ display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .lob-head .swatch{ width:11px; height:11px; border-radius:3px; }
+  .lob-head h2{ font-size:19px; }
+  .lob-head .count{ font-size:12.5px; color:var(--ink-2); }
+  .lob-desc{ font-size:12.5px; color:var(--ink-2); margin:0 0 12px; max-width:90ch; }
+
+  table.reg{ width:100%; border-collapse:collapse; font-size:13px; }
+  table.reg th{
+    text-align:left; font-family:"IBM Plex Mono"; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.06em; color:var(--muted); font-weight:600; padding:7px 10px; border-bottom:1px solid var(--hairline);
+  }
+  table.reg td{ padding:9px 10px; border-bottom:1px solid var(--hairline); vertical-align:top; }
+  table.reg tbody tr:hover{ background:var(--surface-2); }
+  .fid{ font-family:"IBM Plex Mono"; font-weight:600; font-size:12px; white-space:nowrap; }
+  .finding-cell .f-title{ font-weight:500; }
+  .finding-cell .f-sys{ font-size:11.5px; color:var(--muted); margin-top:2px; }
+  .score-cell{ width:74px; }
+  .score-num{
+    font-family:"Source Serif 4"; font-size:19px; font-weight:700; line-height:1.05;
+    font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1;
+  }
+  .score-num.unscored{ color:var(--muted); font-family:"IBM Plex Mono"; font-size:15px; }
+  .score-detail{
+    font-family:"IBM Plex Mono"; font-size:10.5px; color:var(--muted); margin-top:1px;
+    font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1; white-space:nowrap;
+  }
+  .band-pill{
+    font-family:"IBM Plex Mono"; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:999px;
+    display:inline-block; white-space:nowrap; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .band-pill.unscored{ background:var(--surface-2); color:var(--muted); border:1px dashed var(--hairline); }
+  .exposure-badge{
+    font-size:11.5px; padding:3px 8px; border-radius:6px; display:inline-block; max-width:180px;
+  }
+  .exposure-badge.known{ background:var(--good-wash); color:var(--good); font-weight:600; }
+  .exposure-badge.estimated{ background:var(--warning-wash); color:var(--warning); font-weight:600; }
+  .exposure-badge.rate{ background:var(--warning-wash); color:var(--warning); font-weight:600; }
+  .exposure-badge.none{ background:var(--surface-2); color:var(--muted); border:1px dashed var(--hairline); }
+
+  .notes-btn{
+    font-family:"IBM Plex Mono"; font-size:11px; background:none; border:1px solid var(--hairline);
+    border-radius:6px; padding:4px 8px; color:var(--ink-2); cursor:pointer;
+  }
+  .notes-btn:hover{ border-color:var(--accent); color:var(--accent); }
+  .notes-btn.has-note{ border-color:var(--accent); color:var(--accent); background:var(--accent-wash); }
+  tr.note-row td{ padding:0 10px 14px; border-bottom:1px solid var(--hairline); background:var(--surface-2); }
+  tr.note-row.hidden{ display:none; }
+  .note-box{ padding:10px 2px 2px; }
+  .note-box textarea{
+    width:100%; min-height:64px; resize:vertical; font-family:"IBM Plex Sans"; font-size:13px;
+    border:1px solid var(--hairline); border-radius:8px; padding:8px 10px; background:var(--surface); color:var(--ink);
+  }
+  .note-box .note-actions{ display:flex; justify-content:space-between; align-items:center; margin-top:6px; }
+  .note-meta{ font-size:11px; color:var(--muted); }
+  .save-btn{
+    font-family:"IBM Plex Mono"; font-size:11.5px; background:var(--accent); color:var(--accent-ink);
+    border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600;
+  }
+  .save-btn:disabled{ opacity:.5; cursor:default; }
+  .save-status{ font-size:11px; color:var(--good); margin-left:8px; }
+
+  .evidence{ font-size:12px; color:var(--ink-2); font-style:italic; margin-top:3px; }
+
+  /* ---------- quick exposure estimator ---------- */
+  .estimator .est-form{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:12px; align-items:end; margin-bottom:16px;
+  }
+  .estimator .est-form label{
+    display:flex; flex-direction:column; gap:4px; font-size:11px; color:var(--ink-2);
+    font-family:"IBM Plex Mono"; text-transform:uppercase; letter-spacing:.03em;
+  }
+  .estimator .est-form label:nth-child(2){ grid-column:span 2; }
+  .estimator input, .estimator select{
+    font-family:"IBM Plex Sans"; font-size:13px; padding:7px 9px; border:1px solid var(--hairline);
+    border-radius:7px; background:var(--surface); color:var(--ink); text-transform:none; letter-spacing:normal;
+  }
+  .estimator .est-form #est-calc{ width:100%; padding:8px 12px; }
+  table.est-table td:nth-child(2){ white-space:normal; min-width:170px; }
+  .est-del{
+    font-family:"IBM Plex Mono"; font-size:11px; background:none; border:1px solid var(--hairline);
+    border-radius:6px; padding:2px 7px; color:var(--muted); cursor:pointer;
+  }
+  .est-del:hover{ border-color:var(--critical); color:var(--critical); }
+
+  .tag-row{ display:flex; flex-wrap:wrap; gap:4px; margin-top:5px; }
+  .lob-badge{
+    font-family:"IBM Plex Mono"; font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px;
+    background:var(--surface-2); color:var(--ink-2); border:1px solid var(--hairline); white-space:nowrap;
+  }
+  .lob-badge.cross{ font-style:italic; color:var(--muted); }
+  .lob-badge.inferred{ border-style:dashed; }
+  .los-badge{
+    font-size:10px; font-weight:600; padding:1px 6px; border-radius:4px; white-space:nowrap;
+    background:var(--accent-wash); color:var(--accent); border:1px solid transparent;
+  }
+  .source-tag{ font-size:11px; color:var(--muted); }
+
+  .rel-badge{
+    font-size:10px; font-weight:600; padding:1px 7px; border-radius:4px; white-space:nowrap;
+    display:inline-block; letter-spacing:.02em;
+  }
+  .rel-badge.leakage{ background:var(--critical-wash); color:var(--critical); }
+  .rel-badge.adjacent{ background:var(--warning-wash); color:var(--warning); }
+  .rel-badge.not-leakage{ background:var(--surface-2); color:var(--ink-2); border:1px solid var(--hairline); }
+
+  .unconfirmed-badge{
+    font-family:"IBM Plex Mono"; font-size:10px; font-weight:600; padding:1px 7px; border-radius:4px;
+    background:transparent; color:var(--accent); border:1px dashed var(--accent); white-space:nowrap;
+  }
+  tr.reg-row.unconfirmed{ background:linear-gradient(90deg, var(--accent-wash) 0%, transparent 3%); }
+
+  .rel-panel-row{ display:grid; grid-template-columns:170px 60px 1fr; gap:12px; align-items:baseline; margin-bottom:9px; font-size:12.5px; }
+  .rel-panel-row .n{ font-family:"Source Serif 4"; font-weight:700; font-size:17px; }
+  .rel-panel-row .d{ color:var(--ink-2); }
+
+  .empty-state{
+    border:1px dashed var(--hairline); border-radius:10px; padding:20px 18px; text-align:center;
+    color:var(--ink-2); font-size:13px; background:var(--surface-2);
+  }
+  .empty-state strong{ color:var(--ink); display:block; margin-bottom:4px; font-family:"Source Serif 4"; font-size:15px; }
+
+  footer{ margin-top:36px; padding-top:16px; border-top:1px solid var(--hairline); font-size:11.5px; color:var(--muted); }
+
+  @media (max-width:820px){
+    .kpis{ grid-template-columns:repeat(2,1fr); }
+    table.reg thead{ display:none; }
+    table.reg, table.reg tbody, table.reg tr, table.reg td{ display:block; width:100%; }
+    table.reg tr{ border-bottom:1px solid var(--hairline); padding:8px 0; }
+    table.reg td{ border:none; padding:3px 0; }
+    .estimator .est-form{ grid-template-columns:1fr 1fr; }
+    .estimator .est-form label:nth-child(2){ grid-column:span 2; }
+  }
+  .scroll-wrap{ overflow-x:auto; }
+</style>
+
+<div id="app"></div>
+
+<script id="app-state" type="application/json">{"notes":{"Ph06":{"text":"abc","updated":"02 Sept, 11:58"}},"activeTab":"OPD"}</script>
+<script>
+(function(){
+"use strict";
+var SELF_SRC = document.currentScript ? document.currentScript.textContent : "";
+
+/* ============ REGISTER DATA (source: Revenue Leakage Audit Framework V6, Sep 2026) ============
+   LOB = the 5 patient-care lines Nicole defined: OPD, IPD, ED, MCU, OT.
+     Cath Lab -> IPD · Day Care/Chemo & Hemodialysis -> OPD · Medical Rehab -> OPD · Critical Care -> IPD.
+     Findings tying to more than one setting carry multiple LOB tags; enterprise-wide findings sit in CROSS.
+   LOS  = diagnostic/ancillary service lines that cut across every LOB: Radiology, Pharmacy, Laboratory, Nutrition & Dietetics.
+   Pharmacy LOB tags are as stated in the source register (slide "Pharmacy — Revenue Leakage Map"). ED items
+   are ED by definition (the department IS the LOB). Everything else without an explicit source LOB tag is
+   marked lobInferred:true — a reasoned placement from process context, not a cited figure. */
+var LOB_DEFS = [
+  {key:"OPD", name:"Outpatient (OPD)"},
+  {key:"IPD", name:"Inpatient (IPD)"},
+  {key:"ED",  name:"Emergency (ED)"},
+  {key:"MCU", name:"Medical Check-Up (MCU)"},
+  {key:"OT",  name:"Operating Theatre (OT)"},
+  {key:"CROSS", name:"Cross-LOB / Enterprise-wide"}
+];
+
+/* relevance: is this actually revenue leakage (a billed-vs-performed gap), or something adjacent
+   (a cost/margin/control/reconciliation gap that can enable or mask leakage but isn't itself a
+   demonstrated missed charge), or not revenue leakage at all (a different problem — cost overspend
+   in the opposite direction, or a pure accounting/classification issue with no billing impact)? */
+var ALL_ITEMS = [
+  // ---- Pharmacy (source: Pharmacy — Revenue Leakage Map register; LOB column as printed) ----
+  {id:"Ph01",finding:"UOM input error — box price entered in unit (tablet/pcs) column",sys:"KAIROS",L:3,I:2,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"An inventory/costing entry error, not a confirmed unbilled charge to a patient."},
+  {id:"Ph04",finding:"Emergency-kit drugs used — not billed per patient",sys:"WMS",L:2,I:3,exp:"none",lob:["ED"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph05",finding:"Consumable consumption not systematically recorded",sys:"WMS",L:4,I:2,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"A recording/control gap — plausible leakage, not a confirmed one."},
+  {id:"Ph06",finding:"Prescription written but never dispensed / charged (lost script)",sys:"EMR",L:3,I:3,exp:"none",lob:["OPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph07",finding:"Clinical packages bypass pharmacy gate — no stock deduction, drug cost never charged",sys:"KAIROS / HOPE",L:4,I:3,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage",evidence:"SME-1: no pharmacy gate; HOPE treats as procedure, no stock deduction."},
+  {id:"Ph08",finding:"Drug dispensed — charge never posted to HIS",sys:"KAIROS",L:2,I:2,exp:"none",lob:["ED","IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph09",finding:"Quantity dispensed greater than quantity billed",sys:"KAIROS",L:3,I:3,exp:"none",lob:["IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph11",finding:"Substitution made — HIS charge not updated to substituted drug price",sys:"KAIROS",L:3,I:3,exp:"none",lob:["OPD","IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph12",finding:"High-cost drug billed at or below purchase price — no margin captured",sys:"KAIROS",L:2,I:4,exp:"none",lob:["OPD","IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph13",finding:"Drug returned — charge reversed but stock not restocked (or vice versa)",sys:"KAIROS",L:3,I:3,exp:"none",lob:["IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"Could mean an over-generous refund (revenue loss) or just an inventory mismatch — direction isn't established."},
+  {id:"Ph14",finding:"Consumption SOD breach — same person records and consumes",sys:"KAIROS",L:2,I:3,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"A segregation-of-duties control gap — it enables leakage/fraud, it isn't itself a measured loss."},
+  {id:"Ph15",finding:"Stock opname variance, book vs physical — SHLV instance quantified",sys:"WMS / PowerApps",L:3,I:3,exp:"known",expVal:"Rp −800M (SHLV, one stock-opname cycle)",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"An inventory shrinkage/valuation number — real money, but not confirmed as unbilled patient revenue specifically (could include waste, damage, expiry, or theft).",evidence:"SME-6: WMS + PowerApps integration issues; variances roll over instead of resolving per period."},
+  {id:"Ph16",finding:"Price master mismatch — KAIROS tariff ≠ approved tariff (ERP)",sys:"KAIROS / ERP",L:4,I:3,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph17",finding:"Pharmacy charges billed but excluded from claim / denied by payer",sys:"KAIROS",L:3,I:4,exp:"none",lob:["OPD","IPD"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"leakage"},
+  {id:"Ph18",finding:"Billed revenue ≠ revenue recognized in ERP (HIS→ERP interface gap)",sys:"ERP",L:3,I:4,exp:"none",lob:["CROSS"],los:"Pharmacy",source:"Pharmacy SME (Bu Tuty)",relevance:"adjacent",relNote:"A revenue-recognition/reconciliation gap between systems — could be timing, not necessarily a permanent loss."},
+
+  // ---- Emergency Department (ED = the LOB itself, no inference needed) ----
+  {id:"ED1",finding:"Code-situation retrospective charge capture — CPR drug pushes & consumables entered after the fact",sys:"EMR / KAIROS",L:3,I:4,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+  {id:"ED2",finding:"Partial-use consumables retained & reused across patients — billing basis undefined",sys:"WMS",L:3,I:3,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"adjacent",relNote:"The SME herself calls the billing basis undefined — could be waste, double-charge risk, or unbilled use."},
+  {id:"ED3",finding:"Stockout substitution to a higher price tier — margin absorbed by hospital under fixed-tariff payers",sys:"KAIROS",L:3,I:3,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"adjacent",relNote:"Revenue is unchanged under a fixed tariff — this is margin compression (a cost problem), not missed billing."},
+  {id:"ED4",finding:"LWBS — walkaways at triage, entire episode revenue untracked",sys:"KAIROS",L:4,I:3,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage",evidence:"SME-confirmed and occurring, but ‘still developing’ — the only leakage the SME confirmed as real and completely unmeasured."},
+  {id:"ED5",finding:"Triage / assessment fee capture inconsistent — outside SME's operational scope",sys:"KAIROS",L:3,I:3,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+  {id:"ED6",finding:"Tindakan ED performed but not billed",sys:"KAIROS",L:3,I:4,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+  {id:"ED7",finding:"Emergency drugs given but not charged",sys:"KAIROS",L:2,I:4,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+  {id:"ED8",finding:"Observation & ICU-boarding hours capture — long-stay / boarding hours vs charged hours",sys:"KAIROS",L:2,I:3,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+  {id:"ED9",finding:"Charges lost on transfer to IPD / ICU",sys:"KAIROS",L:1,I:2,exp:"none",lob:["ED"],source:"ED SME (dr. Debryna)",relevance:"leakage"},
+
+  // ---- Radiology (LOS: Radiology — no source LOB split, marked cross-LOB & inferred) ----
+  {id:"RD1",finding:"Two scans merged into one billing — second acquisition consumes machine time & materials unbilled",sys:"RIS / KAIROS",L:3,I:4,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"leakage"},
+  {id:"RD2",finding:"Contrast conversion via cancel-and-merge — first (non-contrast) acquisition unbilled",sys:"RIS / KAIROS",L:3,I:4,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"leakage",evidence:"Order non-kontras (Rp3jt) cancelled manually, merged to tarif kontras (Rp4.5jt) — unit tariffs only, not a measured exposure total."},
+  {id:"RD3",finding:"OPD end-billing — unbilled exams where billing sits at the end of the visit",sys:"KAIROS",L:3,I:4,exp:"none",lob:["OPD"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"leakage",evidence:"Named ‘OPD end-billing’ by the SME directly — the one radiology finding with an explicit LOB in its own description."},
+  {id:"RD4",finding:"Report e-mailed before payment confirmed?",sys:"KAIROS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"adjacent",relNote:"A collections/AR risk (payment may never come) rather than a missed charge — the charge itself still exists."},
+  {id:"RD5",finding:"No cashier in radiology — Front Office handoff failure risk",sys:"KAIROS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"adjacent",relNote:"A process handoff gap that could produce unbilled cases — plausible, not demonstrated."},
+  {id:"RD6",finding:"Contrast / materials bundled in package — actual usage vs package content not reconciled",sys:"KAIROS",L:2,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"adjacent",relNote:"A package-cost/margin issue — the exam is already billed as a package, so this is cost overrun, not a missing charge."},
+  {id:"RD7",finding:"CITO (urgent) billing bypass — untested",sys:"KAIROS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"leakage"},
+  {id:"RD8",finding:"Aborted / repeat study billing basis unclear",sys:"KAIROS",L:2,I:2,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"adjacent",relNote:"Could be over- or under-charge depending on how it resolves — direction not established."},
+  {id:"RD9",finding:"Teleradiology professional fee not captured on studies referred out",sys:"EMR",L:2,I:2,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Radiology SME (Pak Tino / Bu Ni Ketut)",relevance:"leakage"},
+
+  // ---- Financial Controller — SHLV (cross-cutting; LOB inferred from finding context except FC06, per Nicole: HD -> OPD) ----
+  {id:"FC01",finding:"Insurance approval pending — no SLA tracking, FC has no escalation channel to insurer",sys:"mySiloam / Manual",L:4,I:3,exp:"none",lob:["OT"],lobInferred:true,source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"An authorisation-delay/collections risk (surgery could be cancelled) rather than a service performed and left unbilled.",evidence:"FC notes tie this to surgery authorisation delay/cancellation risk."},
+  {id:"FC02",finding:"Infus-pump reuse — sterilisation cost not always charged to patient",sys:"WMS / KAIROS",L:4,I:2,exp:"none",lob:["IPD"],lobInferred:true,source:"Financial Controller — SHLV",relevance:"leakage"},
+  {id:"FC03",finding:"Oxygen not measured per patient — no volume-based billing trigger",sys:"WMS / KAIROS",L:4,I:3,exp:"rate",expVal:"Illustrative rate only: ARPP Rp280,000/day (not a measured exposure)",lob:["IPD"],lobInferred:true,source:"Financial Controller — SHLV",relevance:"leakage"},
+  {id:"FC04",finding:"Package pricing indirect charges estimated, not based on actual cost",sys:"KAIROS",L:4,I:3,exp:"none",lob:["CROSS"],source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"A pricing-design/cost-recovery gap, not a specific transaction left unbilled."},
+  {id:"FC05",finding:"KAIROS ↔ HOPE / ASAPTA(AX) interface — cost and revenue live in different systems, reconciliation not real-time",sys:"KAIROS / HOPE / ASAPTA",L:3,I:2,exp:"none",lob:["CROSS"],source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"A reporting/reconciliation gap — it can hide leakage elsewhere, but isn't itself a leak."},
+  {id:"FC06",finding:"Hemodialysis = 41% of total cost (May 2026) — margin per session not analysed individually",sys:"ASAPTA (AX) / HOPE",L:3,I:4,exp:"rate",expVal:"41% of total cost is a cost-share figure, not a leakage Rp amount",lob:["OPD"],source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"A margin-analysis gap — there's no confirmed under-billing yet, just an unanalysed cost concentration.",evidence:"Hemodialysis rolls up under OPD per current LOB mapping."},
+  {id:"FC07",finding:"HO pricing governance — item names standardised, prices are not; change timing unplanned",sys:"KAIROS (price master)",L:4,I:3,exp:"none",lob:["CROSS"],source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"A pricing-governance gap that enables leakage (like Ph16) rather than a leak itself."},
+  {id:"FC08",finding:"Network-wide leakage not consolidated across hospitals",sys:"Multi-hospital KAIROS",L:3,I:3,exp:"estimated",expVal:"Potential Rp 800M+/month if replicated network-wide (unconfirmed estimate, not hospital-specific)",lob:["CROSS"],source:"Financial Controller — SHLV",relevance:"adjacent",relNote:"A reporting-visibility gap across hospitals — the underlying leaks it would surface are the other rows in this register."},
+
+  // ---- Financial Controller — Network round (PG / CG / VS units) ----
+  {id:"PG-1",finding:"Pump (syringe/infusion) usage not charged — manual charge-form entry, no reconciliation",sys:"KAIROS + EMR/Nursing",L:4,I:3,exp:"none",lob:["IPD"],lobInferred:true,source:"Financial Controller — Network",relevance:"leakage",evidence:"Ops walkthrough named the owner as the Inpatient Manager Nursing: three consecutive manual handoffs, zero verification at any point."},
+  {id:"PG-2",finding:"USG 4D charged as 2D — order→billing does not lock modality",sys:"RIS/PACS + KAIROS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Financial Controller — Network",relevance:"leakage",evidence:"Ops SME pushback: radiographer cross-checks invoice vs referral before scan — residual risk narrows to that one manual check."},
+  {id:"PG-3",finding:"MRI 3T charged as 1.5T — charging not linked to machine class",sys:"RIS/PACS + KAIROS",L:2,I:4,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Financial Controller — Network",relevance:"leakage"},
+  {id:"PG-4",finding:"Room upgrade uncontrolled — insurance-driven upgrades leave no invoice trace",sys:"KAIROS + Registration",L:3,I:4,exp:"none",lob:["IPD"],source:"Financial Controller — Network",relevance:"leakage",evidence:"Self-pay upgrade path is fully traceable; the insurance-driven path (17 insurers) is not — priority CAAT gap. Room class only exists for inpatients."},
+  {id:"CG-1",finding:"BPJS formulary & drug quantity not optimised vs INA-CBG — single-person dependency, no annual review",sys:"Pharmacy + Purchasing",L:4,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Pharmacy",source:"Financial Controller — Network",relevance:"adjacent",relNote:"Under a bundled INA-CBG payment the revenue is fixed — this is a cost/utilisation efficiency issue, not missed billing."},
+  {id:"VS-1",finding:"Consumable posted as cost (‘consum’), not charged (‘cas’) — culture / item-master gap",sys:"WMS + KAIROS",L:4,I:3,exp:"rate",expVal:"~25% under-capture measured on high-reuse OT consumables (rate only, not converted to Rp)",lob:["OT"],source:"Financial Controller — Network",relevance:"leakage",evidence:"Ops SME: a consumable usable up to 100x is charged out only ~75x, concentrated in OT — first SME-confirmed number in the SHLV round."},
+  {id:"VS-2",finding:"Vendor equipment rental markup — no standard, modal cost (PKS) invisible in system",sys:"KAIROS + Procurement",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,source:"Financial Controller — Network",relevance:"not-leakage",relNote:"This is procurement overspend — money going OUT inappropriately — the opposite direction from revenue leakage.",evidence:"Markup mostly ~20%, uncontracted / off-system."},
+  {id:"VS-3",finding:"Drug % of revenue varies by doctor — possible under-prescribing",sys:"KAIROS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Pharmacy",source:"Financial Controller — Network",relevance:"adjacent",relNote:"Could reflect appropriate clinical variation rather than missed revenue — flagged as a pattern, not a confirmed leak.",evidence:"Ideal ~50% of revenue; some doctors as low as ~20%."},
+  {id:"VS-4",finding:"Low lab / radiology conversion on some specialties — referral leakage not tracked",sys:"KAIROS + LIS/RIS",L:3,I:3,exp:"none",lob:["CROSS"],lobInferred:true,los:"Radiology",source:"Financial Controller — Network",relevance:"adjacent",relNote:"A commercial/referral-conversion gap (upside not captured) rather than a billed-but-uncaptured transaction."},
+  {id:"VS-5",finding:"Cost misclassification — implant posted as OPEX via PR portal instead of material cost",sys:"ERP (AX) + PR portal",L:3,I:2,exp:"none",lob:["OT"],lobInferred:true,source:"Financial Controller — Network",relevance:"not-leakage",relNote:"An accounting/P&L classification issue — no cash or billing impact, so not revenue leakage."},
+
+  // ---- Pre-identified hypotheses (deck: SME Interview Questions, "Risiko Revenue Leakage (Pre-identified)")
+  //      Raised as interview questions for OT/Cath Lab/Dialysis/Chemo/ICU/Endoscopy/Nursing/general IPD —
+  //      but those SME rounds never happened in either deck, so these were never scored or confirmed.
+  //      Kept here with their original Dampak/Probabilitas words, not converted to a numeric score. ----
+  {id:"PID-01",finding:"Implant (prosthesis, mesh, fixation) not billed or under-billed",sys:"KAIROS + OT documentation",impactLabel:"Very High",probLabel:"High",exp:"none",lob:["OT"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-02",finding:"Expensive OT consumables (energy devices, staples) not captured",sys:"KAIROS + OT documentation",impactLabel:"High",probLabel:"High",exp:"none",lob:["OT"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-03",finding:"Additional procedures beyond the planned operation not billed",sys:"KAIROS + OT documentation",impactLabel:"High",probLabel:"High",exp:"none",lob:["OT"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-04",finding:"Cath Lab: stent / closure device used but not entered into billing",sys:"KAIROS + Cath Lab inventory",impactLabel:"Very High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-05",finding:"Cath Lab: intra-procedural add-ons (FFR, IVUS) not billed",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-06",finding:"Dialysis: per-session consumables (dialyzer, blood lines) not charged per patient",sys:"KAIROS + WMS",impactLabel:"High",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-07",finding:"Dialysis: session medication (EPO, iron, heparin) not billed",sys:"KAIROS",impactLabel:"High",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-08",finding:"Chemotherapy: drug wastage not billed or written off",sys:"KAIROS + Pharmacy",impactLabel:"High",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-09",finding:"Chemotherapy: premedication (antiemetic, steroid, hydration) not charged",sys:"KAIROS",impactLabel:"Medium",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-10",finding:"ICU/ICCU/HCU: room charge under-billed or billed at the wrong class",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-11",finding:"ICU: ventilator usage not billed or only partially billed",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-12",finding:"ICU: bedside procedures (central line, intubation) not billed",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-13",finding:"Endoscopy: intra-procedural add-ons (polypectomy, biopsy) not billed",sys:"KAIROS",impactLabel:"High",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-14",finding:"Endoscopy: sedation / single-use accessories not charged per patient",sys:"KAIROS",impactLabel:"Medium",probLabel:"High",exp:"none",lob:["OPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-15",finding:"Nursing: billable procedures (NGT, catheter, wound care) not billed",sys:"KAIROS + Nursing documentation",impactLabel:"Medium",probLabel:"High",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-16",finding:"Nursing: documentation insufficient to support secondary-diagnosis coding",sys:"Medical Record / Casemix",impactLabel:"High",probLabel:"High",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"adjacent",relNote:"A documentation/coding-support gap — it can suppress case-mix revenue, but is not itself an unbilled charge."},
+  {id:"PID-17",finding:"Inpatient: room upgrade/downgrade not reflected in billing",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"},
+  {id:"PID-18",finding:"Inpatient: patient discharged without a final bill (late charges lost)",sys:"KAIROS",impactLabel:"High",probLabel:"Medium",exp:"none",lob:["IPD"],lobInferred:true,source:"Pre-identified — SME interview not yet run",confirmed:false,relevance:"leakage"}
+];
+
+var EXPOSURE_LABEL = { known:"Quantified (Rp)", estimated:"Order-of-magnitude estimate", rate:"Rate only — no Rp", none:"Not quantified" };
+
+var RELEVANCE_META = {
+  leakage: {label:"Revenue leakage", css:"leakage", desc:"A billed-vs-performed gap — a service or consumable was delivered but never charged, or charged below tariff."},
+  adjacent: {label:"Adjacent risk", css:"adjacent", desc:"A cost, margin, control or reconciliation gap that can enable or mask leakage — not itself a demonstrated missed charge."},
+  "not-leakage": {label:"Not revenue leakage", css:"not-leakage", desc:"A different problem — cost overspend (money going out) or an accounting/classification issue with no billing impact."}
+};
+
+function band(score){
+  if(score==null) return {label:"Unscored", css:"unscored"};
+  if(score>=12) return {label:"High", css:"critical"};
+  if(score>=6) return {label:"Moderate", css:"warning"};
+  return {label:"Low", css:"good"};
+}
+ALL_ITEMS.forEach(function(it){
+  if(it.confirmed===undefined) it.confirmed = true;
+  it.score = (it.L!=null && it.I!=null) ? it.L*it.I : null;
+  it.band = band(it.score);
+});
+
+var LOBS = LOB_DEFS.map(function(d){
+  return {
+    key:d.key, name:d.name,
+    items: ALL_ITEMS.filter(function(it){ return it.lob.indexOf(d.key) !== -1; })
+  };
+});
+
+var TOTAL = ALL_ITEMS.length;
+var QUANT = ALL_ITEMS.filter(function(i){ return i.exp==="known"; }).length;
+var PARTIAL = ALL_ITEMS.filter(function(i){ return i.exp==="estimated"||i.exp==="rate"; }).length;
+var NONE = TOTAL - QUANT - PARTIAL;
+var HIGH = ALL_ITEMS.filter(function(i){ return i.band.label==="High"; }).length;
+var UNASSESSED = LOBS.filter(function(g){ return g.items.length===0; }).map(function(g){ return g.name; });
+var CONFIRMED_ITEMS = ALL_ITEMS.filter(function(i){ return i.confirmed!==false; });
+var UNCONFIRMED_COUNT = TOTAL - CONFIRMED_ITEMS.length;
+var LEAK_COUNT = ALL_ITEMS.filter(function(i){ return i.relevance==="leakage"; }).length;
+var ADJ_COUNT = ALL_ITEMS.filter(function(i){ return i.relevance==="adjacent"; }).length;
+var NOTLEAK_COUNT = ALL_ITEMS.filter(function(i){ return i.relevance==="not-leakage"; }).length;
+
+/* ============ STATE ============ */
+var stateEl = document.getElementById("app-state");
+var state;
+try{ state = JSON.parse(stateEl.textContent); }catch(e){ state = {notes:{}, activeTab:"all"}; }
+state.notes = state.notes || {};
+state.estimates = state.estimates || {};
+state.activeTab = state.activeTab || "all";
+var openNoteId = null;
+
+/* ============ RENDER ============ */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];}); }
+function fmtNum(n){ return (n==null||isNaN(n)) ? '—' : Number(n).toLocaleString('id-ID',{maximumFractionDigits:2}); }
+function fmtRp(n){ return (n==null||isNaN(n)) ? '—' : 'Rp '+Number(Math.round(n)).toLocaleString('id-ID'); }
+
+function estimatorHTML(){
+  var ests = Object.keys(state.estimates).map(function(k){ return state.estimates[k]; });
+  ests.sort(function(a,b){ return (b.exposure||0)-(a.exposure||0); });
+  var itemOptions = ALL_ITEMS.map(function(it){
+    var short = it.finding.length>54 ? it.finding.slice(0,54)+'…' : it.finding;
+    return '<option value="'+it.id+'">'+it.id+' — '+esc(short)+'</option>';
+  }).join("");
+  var rows = ests.length ? ests.map(function(e){
+    return '<tr>'+
+      '<td class="fid">'+esc(e.itemId||'—')+'</td>'+
+      '<td>'+esc(e.label)+(e.period?'<div class="f-sys">'+esc(e.period)+'</div>':'')+'</td>'+
+      '<td class="mono" style="text-align:right;">'+fmtNum(e.universe)+'</td>'+
+      '<td class="mono" style="text-align:right;">'+fmtNum(e.billed)+'</td>'+
+      '<td class="mono" style="text-align:right;">'+(e.capturePct!=null? e.capturePct+'%' : '—')+'</td>'+
+      '<td class="mono" style="text-align:right;">'+fmtRp(e.rate)+'</td>'+
+      '<td class="mono" style="text-align:right;font-weight:700;color:var(--critical);">'+fmtRp(e.exposure)+'</td>'+
+      '<td><button class="est-del" data-est-del="'+e.id+'" title="Remove this estimate">✕</button></td>'+
+    '</tr>';
+  }).join("") : '<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:18px;">No quick estimates yet — fill in the calculator above to size and rank your first pinpoint.</td></tr>';
+
+  return '<div class="panel estimator">'+
+    '<h3>Quick Exposure Estimator</h3>'+
+    '<div class="sub">Size a pinpoint from a handful of numbers instead of pulling bulk transaction data, then rank candidates to decide which ones justify a full transaction-level pull. '+
+      '<strong>Gap volume</strong> = Universe (what should have been billed) − Actually billed, netted down by any known legitimate-exception rate (e.g. entitled class upgrades that are not leakage). '+
+      '<strong>Estimated exposure</strong> = net gap volume × unit rate (ARPP, tariff, or unit price). Directional, not audit-grade — a fast triage ranking, not a substitute for the transaction pull once a pinpoint is prioritized.</div>'+
+    '<div class="est-form">'+
+      '<label>Tie to register item (optional)<select id="est-item"><option value="">— none / other —</option>'+itemOptions+'</select></label>'+
+      '<label>Label<input id="est-label" type="text" placeholder="e.g. Infusion pump usage vs billed"></label>'+
+      '<label>Universe — should-bill volume<input id="est-universe" type="number" step="any" placeholder="e.g. 750 (25 pumps × 30 days)"></label>'+
+      '<label>Actually billed (volume)<input id="est-billed" type="number" step="any" placeholder="e.g. 600"></label>'+
+      '<label>Known legitimate exceptions (%)<input id="est-exception" type="number" step="any" placeholder="0"></label>'+
+      '<label>Unit rate (Rp)<input id="est-rate" type="number" step="any" placeholder="e.g. 150000"></label>'+
+      '<label>Period label (optional)<input id="est-period" type="text" placeholder="e.g. per month, SHLV"></label>'+
+      '<label style="justify-content:flex-end;"><button class="save-btn" id="est-calc" type="button">Calculate &amp; save</button></label>'+
+    '</div>'+
+    '<div class="scroll-wrap">'+
+    '<table class="reg est-table">'+
+      '<thead><tr><th>Item</th><th>Label</th><th style="text-align:right;">Universe</th><th style="text-align:right;">Billed</th><th style="text-align:right;">Capture</th><th style="text-align:right;">Rate</th><th style="text-align:right;">Est. exposure</th><th></th></tr></thead>'+
+      '<tbody>'+rows+'</tbody>'+
+    '</table></div>'+
+  '</div>';
+}
+
+function kpiHTML(){
+  var pct = Math.round((QUANT/TOTAL)*100);
+  var coreLobs = LOBS.filter(function(g){ return g.key!=="CROSS"; });
+  var assessed = coreLobs.filter(function(g){ return g.items.length>0; }).length;
+  return ''+
+  '<div class="kpis">'+
+    '<div class="kpi"><div class="num">'+CONFIRMED_ITEMS.length+'<small> +'+UNCONFIRMED_COUNT+'</small></div><div class="label">Confirmed findings, plus unconfirmed potentials</div></div>'+
+    '<div class="kpi"><div class="num">'+LEAK_COUNT+'<small> / '+TOTAL+'</small></div><div class="label">Actually revenue leakage (see relevance below)</div></div>'+
+    '<div class="kpi"><div class="num">'+assessed+'<small> / '+coreLobs.length+'</small></div><div class="label">LOBs with at least one finding</div></div>'+
+    '<div class="kpi warn"><div class="num">'+pct+'<small>%</small></div><div class="label">Have a quantified Rp figure ('+QUANT+' of '+TOTAL+')</div></div>'+
+    '<div class="kpi"><div class="num">'+HIGH+'</div><div class="label">Scored High risk (score ≥12)</div></div>'+
+  '</div>';
+}
+
+function flagHTML(){
+  var unassessedTxt = UNASSESSED.length ? UNASSESSED.join(', ')+' — no confirmed findings yet, not zero risk.' : '';
+  var noneP = Math.round((NONE/TOTAL)*100);
+  return ''+
+  '<div class="flag">'+
+    '<div class="glyph">!</div>'+
+    '<div>'+
+      '<h2>No revenue baseline exists yet, and '+noneP+'% of leakage points are unquantified</h2>'+
+      '<p>The source diagnostic (Revenue Leakage Audit Framework, SME + Financial Controller interviews) scores every finding by Likelihood × Impact only. '+
+      'No LOB has a stated revenue figure to leak <em>from</em>, and only '+QUANT+' of '+TOTAL+' findings carry an actual Rupiah exposure ('+ALL_ITEMS.filter(function(i){return i.exp==='known';}).map(function(i){return i.id;}).join(', ')+'). '+
+      PARTIAL+' more have a rate or an order-of-magnitude estimate, not a case-level Rp figure. The remaining '+NONE+' are risk-scored only — flagged per row below. '+
+      'Not every row is actually revenue leakage either: only <strong>'+LEAK_COUNT+' of '+TOTAL+'</strong> are billed-vs-performed gaps — see the relevance breakdown below for the '+ADJ_COUNT+' adjacent and '+NOTLEAK_COUNT+' non-leakage items mixed into the same register. '+
+      'This pass also adds <strong>'+UNCONFIRMED_COUNT+' unconfirmed potentials</strong> (marked with a dashed “Unconfirmed” tag) — real leakage hypotheses the deck names for OT, Cath Lab, Dialysis, Chemo, ICU, Endoscopy, Nursing and general Inpatient, none of which have had an SME round yet, so they carry no score, only the deck’s own Dampak/Probabilitas words. '+
+      (unassessedTxt? '<strong>'+esc(unassessedTxt)+'</strong> is still genuinely empty even after adding those. ' : '')+
+      'Treat every score as directional until the quantification pilot (Wave 1) produces measured Rp.</p>'+
+    '</div>'+
+  '</div>';
+}
+
+function relevanceHTML(){
+  var order = ["leakage","adjacent","not-leakage"];
+  var counts = {leakage:LEAK_COUNT, adjacent:ADJ_COUNT, "not-leakage":NOTLEAK_COUNT};
+  var rows = order.map(function(k){
+    var m = RELEVANCE_META[k];
+    return '<div class="rel-panel-row">'+
+      '<div><span class="rel-badge '+m.css+'">'+esc(m.label)+'</span></div>'+
+      '<div class="n">'+counts[k]+'</div>'+
+      '<div class="d">'+esc(m.desc)+'</div>'+
+    '</div>';
+  }).join("");
+  return '<div class="panel">'+
+    '<h3>Is this actually revenue leakage?</h3>'+
+    '<div class="sub">Every row in the register below carries this tag. Reviewed against the definition used elsewhere in this deck: a service or item was delivered but never charged, or charged under tariff.</div>'+
+    rows+
+  '</div>';
+}
+
+function distributionHTML(){
+  var rows = LOBS.map(function(g){
+    var n = g.items.length;
+    if(!n){
+      return '<div class="dist-row"><div>'+esc(g.name)+'</div><div class="dist-track"></div><div class="dist-total" style="color:var(--muted);font-style:italic;">none</div></div>';
+    }
+    var high = g.items.filter(function(i){return i.band.label==="High";}).length;
+    var mod = g.items.filter(function(i){return i.band.label==="Moderate";}).length;
+    var low = g.items.filter(function(i){return i.band.label==="Low";}).length;
+    var unsc = g.items.filter(function(i){return i.band.label==="Unscored";}).length;
+    function seg(count,color){ return count? '<div class="dist-seg" style="width:'+(count/n*100)+'%;background:'+color+'"></div>' : ''; }
+    return '<div class="dist-row"><div>'+esc(g.name)+'</div>'+
+      '<div class="dist-track">'+seg(high,'var(--critical)')+seg(mod,'var(--warning)')+seg(low,'var(--good)')+seg(unsc,'var(--hairline)')+'</div>'+
+      '<div class="dist-total">'+n+'</div></div>';
+  }).join("");
+  return '<div class="panel">'+
+    '<h3>Risk-score distribution by line of business</h3>'+
+    '<div class="sub">A finding tied to two settings (e.g. Ph11, Ph17) counts in both — LOB totals here don’t sum to '+TOTAL+'. Likelihood × Impact band only, not dollar-weighted (see exposure column below for what is and isn’t priced).</div>'+
+    rows+
+    '<div class="legend">'+
+      '<span><i style="background:var(--critical)"></i>High (score ≥12)</span>'+
+      '<span><i style="background:var(--warning)"></i>Moderate (6–11)</span>'+
+      '<span><i style="background:var(--good)"></i>Low (≤5)</span>'+
+      '<span><i style="background:var(--hairline)"></i>Unscored (unconfirmed potential)</span>'+
+    '</div>'+
+  '</div>';
+}
+
+function tabsHTML(){
+  var t = ['<div class="tabs">'];
+  t.push('<div class="tab '+(state.activeTab==="all"?"active":"")+'" data-tab="all">All LOBs <span class="n">'+TOTAL+'</span></div>');
+  LOBS.forEach(function(g){
+    t.push('<div class="tab '+(state.activeTab===g.key?"active":"")+'" data-tab="'+g.key+'">'+esc(g.name)+' <span class="n">'+g.items.length+'</span></div>');
+  });
+  t.push('</div>');
+  return t.join("");
+}
+
+function exposureBadge(it){
+  var cls = it.exp === "known" ? "known" : (it.exp === "none" ? "none" : it.exp);
+  var label = it.exp === "known" ? "Quantified" : (it.exp === "none" ? "Not quantified" : "Not priced");
+  var title = it.expVal || EXPOSURE_LABEL[it.exp];
+  return '<span class="exposure-badge '+cls+'" title="'+esc(title)+'">'+esc(label)+'</span>'+
+    (it.expVal? '<div class="evidence" style="margin-top:4px;max-width:220px;">'+esc(it.expVal)+'</div>' : '');
+}
+
+function lobTagsHTML(it){
+  return '<div class="tag-row">'+
+    it.lob.map(function(k){
+      var d = LOB_DEFS.filter(function(x){return x.key===k;})[0];
+      var label = k==="CROSS" ? "Cross-LOB" : k;
+      return '<span class="lob-badge '+(k==="CROSS"?"cross":"")+' '+(it.lobInferred?"inferred":"")+'" title="'+esc((it.lobInferred?"Inferred from context — not source-tagged. ":"")+(d?d.name:label))+'">'+esc(label)+'</span>';
+    }).join("")+
+    (it.los? '<span class="los-badge">LOS: '+esc(it.los)+'</span>' : '')+
+  '</div>';
+}
+
+function relBadgeHTML(it){
+  var m = RELEVANCE_META[it.relevance];
+  if(!m) return '';
+  return '<span class="rel-badge '+m.css+'" title="'+esc(m.desc+(it.relNote?' — '+it.relNote:''))+'">'+esc(m.label)+'</span>';
+}
+
+function scoreCellHTML(it){
+  if(it.score==null){
+    return '<td class="score-cell"><div class="score-num unscored">—</div>'+
+      '<div class="score-detail">P:'+esc(it.probLabel||'?')+' · I:'+esc(it.impactLabel||'?')+'</div></td>';
+  }
+  return '<td class="score-cell"><div class="score-num" style="color:var(--'+it.band.css+')">'+it.score+'</div>'+
+    '<div class="score-detail">L'+it.L+' × I'+it.I+'</div></td>';
+}
+
+function rowHTML(it){
+  var hasNote = state.notes[it.id] && state.notes[it.id].text;
+  var open = openNoteId === it.id;
+  return ''+
+  '<tr class="reg-row'+(it.confirmed===false?" unconfirmed":"")+'" data-id="'+it.id+'">'+
+    '<td class="fid">'+it.id+'</td>'+
+    '<td class="finding-cell"><div class="f-title">'+esc(it.finding)+
+      (it.confirmed===false? ' <span class="unconfirmed-badge">Unconfirmed</span>' : '')+
+      '</div>'+
+      '<div class="f-sys">'+esc(it.sys)+' · <span class="source-tag">'+esc(it.source)+'</span></div>'+
+      lobTagsHTML(it)+
+      '<div class="tag-row" style="margin-top:4px;">'+relBadgeHTML(it)+'</div>'+
+      (it.relNote? '<div class="evidence">Why: '+esc(it.relNote)+'</div>' : '')+
+      (it.evidence? '<div class="evidence">'+esc(it.evidence)+'</div>' : '')+
+    '</td>'+
+    scoreCellHTML(it)+
+    '<td><span class="band-pill '+(it.band.css==='unscored'?'unscored':'')+'" '+(it.band.css!=='unscored'? 'style="background:var(--'+it.band.css+'-wash);color:var(--'+it.band.css+')"' : '')+'>'+it.band.label+'</span></td>'+
+    '<td>'+exposureBadge(it)+'</td>'+
+    '<td><button class="notes-btn '+(hasNote?"has-note":"")+'" data-note-toggle="'+it.id+'">'+(hasNote?"✎ Note":"+ Note")+'</button></td>'+
+  '</tr>'+
+  '<tr class="note-row '+(open?"":"hidden")+'" data-note-row="'+it.id+'"><td colspan="6">'+
+    '<div class="note-box">'+
+      '<textarea data-note-input="'+it.id+'" placeholder="Add an audit note — owner, follow-up, data request, quantification status…">'+esc(hasNote?state.notes[it.id].text:"")+'</textarea>'+
+      '<div class="note-actions">'+
+        '<span class="note-meta">'+(hasNote && state.notes[it.id].updated? "Last saved "+esc(state.notes[it.id].updated) : "Not yet saved")+'</span>'+
+        '<span><button class="save-btn" data-note-save="'+it.id+'">Save note</button><span class="save-status" data-save-status="'+it.id+'" style="display:none;">Saved ✓</span></span>'+
+      '</div>'+
+    '</div>'+
+  '</td></tr>';
+}
+
+function tableHTML(items){
+  return '<div class="scroll-wrap"><table class="reg">'+
+    '<thead><tr><th>ID</th><th>Finding · LOB / LOS / relevance</th><th>Score</th><th>Band</th><th>Exposure</th><th>Note</th></tr></thead>'+
+    '<tbody>'+items.map(rowHTML).join("")+'</tbody>'+
+  '</table></div>';
+}
+
+var LOB_DESC = {
+  OPD:"Outpatient visits — including chemotherapy/day-care, hemodialysis and medical rehabilitation rolled in as OPD sub-services.",
+  IPD:"Inpatient stays — including cath lab and critical care (ICU/ICCU/HCU) rolled in as IPD sub-services.",
+  ED:"Emergency Department, triage through transfer/discharge.",
+  MCU:"Medical Check-Up.",
+  OT:"Operating Theatre.",
+  CROSS:"Findings that apply across every setting, or that the source material never split by LOB (radiology, some FC/network items) — placement is directional, not a confirmed single-LOB exposure."
+};
+
+function groupsHTML(){
+  var groups = state.activeTab==="all" ? LOBS : LOBS.filter(function(g){return g.key===state.activeTab;});
+  return groups.map(function(g){
+    if(g.items.length===0){
+      return '<div class="lob-group">'+
+        '<div class="lob-head"><h2>'+esc(g.name)+'</h2><span class="count">0 findings</span></div>'+
+        '<div class="empty-state"><strong>Not yet assessed</strong>No SME interview has covered '+esc(g.name)+' yet in this diagnostic round — this is a coverage gap, not a clean bill of health.</div>'+
+      '</div>';
+    }
+    return '<div class="lob-group">'+
+      '<div class="lob-head"><h2>'+esc(g.name)+'</h2><span class="count">'+g.items.length+' findings</span></div>'+
+      '<p class="lob-desc">'+esc(LOB_DESC[g.key]||"")+'</p>'+
+      tableHTML(g.items)+
+    '</div>';
+  }).join("");
+}
+
+function renderApp(){
+  var html = ''+
+    '<div class="masthead">'+
+      '<div><span class="eyebrow">Project ARUS · Phase 1 Diagnostic</span><h1>Revenue Leakage Exposure Map</h1></div>'+
+      '<div class="meta">Source: Revenue Leakage Audit Framework, SME &amp; FC interviews (Jun–Sep 2026)<br>'+
+        '<strong>Siloam Hospitals Group</strong> · last opened '+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</div>'+
+    '</div>'+
+    flagHTML()+
+    kpiHTML()+
+    estimatorHTML()+
+    relevanceHTML()+
+    distributionHTML()+
+    '<div class="panel" style="padding-bottom:6px;">'+
+      '<h3 style="margin-bottom:10px;">Leakage register by line of business</h3>'+
+      tabsHTML()+
+      groupsHTML()+
+    '</div>'+
+    '<footer>Likelihood × Impact scoring: ≥12 High · 6–11 Moderate · ≤5 Low · Unscored = named as a risk in the source deck but never run through an SME round — no L/I to multiply. '+
+      'Relevance tags (Revenue leakage / Adjacent risk / Not revenue leakage) are this pass’s read of each finding, not a re-statement of the source deck. '+
+      'Notes are saved to this dashboard for everyone who opens it. Add follow-ups, owners and data requests inline as the quantification pilot progresses.</footer>';
+  document.getElementById("app").innerHTML = html;
+  wireEvents();
+}
+
+function wireEvents(){
+  var app = document.getElementById("app");
+  app.querySelectorAll("[data-tab]").forEach(function(el){
+    el.addEventListener("click", function(){
+      state.activeTab = el.getAttribute("data-tab");
+      openNoteId = null;
+      renderApp();
+    });
+  });
+  app.querySelectorAll("[data-note-toggle]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var id = el.getAttribute("data-note-toggle");
+      openNoteId = (openNoteId === id) ? null : id;
+      renderApp();
+      if(openNoteId){
+        var ta = app.querySelector('[data-note-input="'+cssEscape(openNoteId)+'"]');
+        if(ta) ta.focus();
+      }
+    });
+  });
+  app.querySelectorAll("[data-note-save]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var id = el.getAttribute("data-note-save");
+      var ta = app.querySelector('[data-note-input="'+cssEscape(id)+'"]');
+      var text = ta ? ta.value.trim() : "";
+      saveNote(id, text, el);
+    });
+  });
+  var calcBtn = app.querySelector("#est-calc");
+  if(calcBtn){
+    calcBtn.addEventListener("click", function(){ calcEstimate(app); });
+  }
+  app.querySelectorAll("[data-est-del]").forEach(function(el){
+    el.addEventListener("click", function(){
+      var id = el.getAttribute("data-est-del");
+      delete state.estimates[id];
+      persistEstimates();
+    });
+  });
+}
+
+function calcEstimate(app){
+  var itemId = app.querySelector("#est-item").value || "";
+  var label = app.querySelector("#est-label").value.trim();
+  var universe = parseFloat(app.querySelector("#est-universe").value);
+  var billed = parseFloat(app.querySelector("#est-billed").value);
+  var exceptionPct = parseFloat(app.querySelector("#est-exception").value);
+  var rate = parseFloat(app.querySelector("#est-rate").value);
+  var period = app.querySelector("#est-period").value.trim();
+  if(isNaN(exceptionPct)) exceptionPct = 0;
+
+  if(!label || isNaN(universe) || isNaN(billed) || isNaN(rate)){
+    var calcBtn = app.querySelector("#est-calc");
+    if(calcBtn){
+      var orig = calcBtn.textContent;
+      calcBtn.textContent = "Need label, universe, billed & rate";
+      calcBtn.disabled = true;
+      setTimeout(function(){ calcBtn.textContent = orig; calcBtn.disabled = false; }, 2200);
+    }
+    return;
+  }
+
+  var gapVolume = Math.max(0, universe - billed);
+  var netGap = gapVolume * (1 - (Math.max(0,Math.min(100,exceptionPct)))/100);
+  var exposure = netGap * rate;
+  var capturePct = universe > 0 ? Math.round((billed/universe)*1000)/10 : null;
+  var now = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  var id = "est_"+Date.now()+"_"+Math.floor(Math.random()*1000);
+  state.estimates[id] = {
+    id:id, itemId:itemId, label:label, period:period,
+    universe:universe, billed:billed, exceptionPct:exceptionPct,
+    rate:rate, gapVolume:gapVolume, capturePct:capturePct, exposure:exposure, updated:now
+  };
+  persistEstimates();
+}
+
+function persistEstimates(){
+  renderApp();
+  publish();
+}
+
+function cssEscape(s){ return s.replace(/([^\w-])/g,"\\$1"); }
+
+function saveNote(id, text, btn){
+  btn.disabled = true;
+  btn.textContent = "Saving…";
+  var now = new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+  if(text){
+    state.notes[id] = {text:text, updated:now};
+  } else {
+    delete state.notes[id];
+  }
+  publish().then(function(ok){
+    if(ok){
+      var status = document.querySelector('[data-save-status="'+cssEscape(id)+'"]');
+      if(status){ status.style.display="inline"; }
+      btn.disabled = false;
+      btn.textContent = "Save note";
+    } else {
+      btn.disabled = false;
+      btn.textContent = "Save note (retry)";
+    }
+  });
+}
+
+/* ============ PERSISTENCE ============
+   IMPORTANT: never read document.head / document.head.innerHTML here. At runtime the served page's
+   <head> can carry content this script didn't author (a platform bridge script, live-reload markup,
+   injected meta) — copying that verbatim into the republished document is what broke the artifact
+   after a note save last time (confirmed: it duplicated a foreign <script> into the next generation,
+   which then conflicted with the platform's own re-injection on reload). Build the head from constants
+   this script owns instead: the title string below, and this page's own <style id="app-style"> content
+   (never anyone else's element). */
+var PAGE_TITLE = "ARUS Leakage Exposure Map";
+function ownCssText(){
+  var el = document.getElementById("app-style");
+  return el ? el.textContent : "";
+}
+function buildFullDocument(){
+  var stateJson = JSON.stringify(state).replace(/</g,"\\u003c");
+  var css = ownCssText().replace(/<\/style/gi,"<\\/style");
+  return '<!doctype html>\n<html>\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'+
+    '<title>'+PAGE_TITLE+'</title>\n<style id="app-style">'+css+'</style>\n</head>\n<body>\n'+
+    '<div id="app"></div>\n'+
+    '<script id="app-state" type="application/json">'+stateJson+'<\/script>\n'+
+    '<script>'+SELF_SRC+'<\/script>\n'+
+    '</body>\n</html>';
+}
+
+var artifactNS = null;
+async function getArtifact(){
+  if(artifactNS) return artifactNS;
+  if(!window.claude || !window.claude.use) return null;
+  try{ artifactNS = await window.claude.use("artifact"); }catch(e){ artifactNS = null; }
+  return artifactNS;
+}
+
+async function publish(){
+  if(!SELF_SRC){
+    console.warn("Note save aborted: could not capture this page's own script source — refusing to publish a document that would load blank.");
+    return false;
+  }
+  var ns = await getArtifact();
+  if(!ns){ return false; }
+  try{
+    await ns.publish(buildFullDocument());
+    return true;
+  }catch(e){
+    if(e && e.code === "conflict"){ return true; } // view will reload to the winner
+    console.warn("Note save failed:", e);
+    return false;
+  }
+}
+
+renderApp();
+})();
+</script>
